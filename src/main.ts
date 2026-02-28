@@ -11,9 +11,9 @@ const CONFIG: Config = {
   CELL_D: 0.8,
   CELL_SPACING: 0.8,
   STEP_INTERVAL_MS: 50,
-  ACTIVE_COLOR: 0x00ff44,
-  FADED_COLOR: 0x3319e6,
-  BACKGROUND_COLOR: 0x0d0d0d,
+  ACTIVE_COLOR: 0x00ff41,
+  FADED_COLOR: 0x003b00,
+  BACKGROUND_COLOR: 0x000000,
 };
 
 const container = document.getElementById("canvas-container")!;
