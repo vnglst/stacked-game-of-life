@@ -13,6 +13,14 @@ export class Renderer3D {
   private controls: OrbitControls;
   private dummy = new THREE.Object3D();
 
+  // Intro animation state
+  private introPhase: 'hold' | 'sweep' | 'orbit' | 'done' = 'hold';
+  private introStartTime = performance.now();
+  private introStartSpherical!: THREE.Spherical;
+  private introEndSpherical!: THREE.Spherical;
+  private static readonly HOLD_DURATION = 3000;
+  private static readonly SWEEP_DURATION = 5000;
+
   constructor(container: HTMLElement, config: Config) {
     this.config = config;
     this.totalLayers = config.HISTORY_LAYERS + 1;
@@ -44,7 +52,29 @@ export class Renderer3D {
     this.controls.target.set(gc, stackMidY, gc);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
+
+    // Compute spherical coords for intro start/end relative to orbit target
+    // Start: top-down (polar angle ~0, looking straight down)
+    // End: isometric (gc+50, 50, gc+50) relative to target
+    const isoOffset = new THREE.Vector3(50, 50 - stackMidY, 50);
+    this.introEndSpherical = new THREE.Spherical().setFromVector3(isoOffset);
+    // Start: same radius, but nearly straight above (small polar angle)
+    this.introStartSpherical = new THREE.Spherical(
+      80 - stackMidY, // radius (height above target)
+      0.01, // phi: nearly top-down (tiny offset avoids gimbal lock)
+      this.introEndSpherical.theta, // same azimuth so no horizontal rotation
+    );
+
+    // Position camera at intro start
+    const startOffset = new THREE.Vector3().setFromSpherical(this.introStartSpherical);
+    this.camera.position.copy(this.controls.target).add(startOffset);
+    this.controls.enabled = false;
     this.controls.update();
+
+    // Cancel intro on any user interaction
+    const onInteract = () => this.cancelIntro();
+    this.renderer.domElement.addEventListener('pointerdown', onInteract);
+    this.renderer.domElement.addEventListener('wheel', onInteract);
 
     // Create one InstancedMesh per layer
     const maxInstances = config.GRID_SIZE * config.GRID_SIZE;
@@ -188,7 +218,15 @@ export class Renderer3D {
     }
   }
 
+  private cancelIntro(): void {
+    if (this.introPhase === 'done') return;
+    this.introPhase = 'done';
+    this.controls.enabled = true;
+    this.controls.autoRotate = false;
+  }
+
   topView(): void {
+    this.cancelIntro();
     const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
     this.camera.position.set(gc, stackMidY + 80, gc);
@@ -197,6 +235,7 @@ export class Renderer3D {
   }
 
   isoView(): void {
+    this.cancelIntro();
     const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
     this.camera.position.set(gc + 50, 50, gc + 50);
@@ -205,8 +244,43 @@ export class Renderer3D {
   }
 
   render(): void {
+    this.updateIntro();
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
+  }
+
+  private updateIntro(): void {
+    if (this.introPhase === 'done') return;
+
+    const elapsed = performance.now() - this.introStartTime;
+
+    if (this.introPhase === 'hold') {
+      if (elapsed < Renderer3D.HOLD_DURATION) return;
+      this.introPhase = 'sweep';
+    }
+
+    if (this.introPhase === 'sweep') {
+      const sweepElapsed = elapsed - Renderer3D.HOLD_DURATION;
+      const t = Math.min(sweepElapsed / Renderer3D.SWEEP_DURATION, 1);
+
+      // Interpolate spherical coordinates for smooth rotation
+      const s = this.introStartSpherical;
+      const e = this.introEndSpherical;
+      const current = new THREE.Spherical(
+        s.radius + (e.radius - s.radius) * t,
+        s.phi + (e.phi - s.phi) * t,
+        s.theta + (e.theta - s.theta) * t,
+      );
+      const offset = new THREE.Vector3().setFromSpherical(current);
+      this.camera.position.copy(this.controls.target).add(offset);
+      this.camera.lookAt(this.controls.target);
+
+      if (t >= 1) {
+        this.introPhase = 'orbit';
+        this.controls.enabled = true;
+        this.controls.autoRotate = true;
+      }
+    }
   }
 
   private onResize(container: HTMLElement): void {
