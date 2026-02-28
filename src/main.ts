@@ -82,8 +82,59 @@ document.getElementById('btn-reset')!.addEventListener('click', () => {
   syncRender();
 });
 
+document.getElementById('btn-acorn')!.addEventListener('click', () => {
+  game.acorn();
+  accumulated = 0;
+  syncRender();
+});
+
+document.getElementById('btn-rpentomino')!.addEventListener('click', () => {
+  game.rPentomino();
+  accumulated = 0;
+  syncRender();
+});
+
 document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
 document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
+
+// Settings menu toggle
+const settingsToggle = document.getElementById('settings-toggle')!;
+const settingsDropdown = document.getElementById('settings-dropdown')!;
+let isSettingsOpen = false;
+
+function toggleSettings() {
+  isSettingsOpen = !isSettingsOpen;
+  if (isSettingsOpen) {
+    settingsDropdown.classList.add('active');
+    settingsToggle.classList.add('active');
+  } else {
+    settingsDropdown.classList.remove('active');
+    settingsToggle.classList.remove('active');
+  }
+}
+
+function closeSettings() {
+  isSettingsOpen = false;
+  settingsDropdown.classList.remove('active');
+  settingsToggle.classList.remove('active');
+}
+
+settingsToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleSettings();
+});
+
+// Close when clicking outside
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('settings-menu')!.contains(e.target as Node)) {
+    closeSettings();
+  }
+});
+
+// Prevent closing when clicking inside the dropdown
+settingsDropdown.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
 
 // Expose for debugging
 (window as unknown as Record<string, unknown>).gameOfLife = {

@@ -1,8 +1,8 @@
 {
-  "name": "3d-game-of-life",
+  "name": "stacked-game-of-life",
   "version": "1.0.0",
   "type": "module",
-  "description": "3D visualization of Conway's Game of Life with history layers",
+  "description": "Stacked visualization of Conway's Game of Life with 3D history layers",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

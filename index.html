@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Game of Life</title>
+    <title>Stacked Game of Life</title>
     <style>
       * {
         margin: 0;
@@ -37,50 +37,194 @@
         pointer-events: none;
       }
 
-      #controls {
+      #footer {
         position: fixed;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 12px;
+        bottom: 16px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 0.05em;
+        pointer-events: none;
       }
 
-      .btn {
-        padding: 10px 24px;
+      #footer a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        pointer-events: auto;
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+      }
+
+      #footer a:hover {
+        color: rgba(255, 255, 255, 0.9);
+        border-bottom-color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* Settings menu */
+      .settings-menu {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 1000;
+      }
+
+      .settings-toggle {
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 8px;
-        color: #e0e0e0;
-        font-family: 'Courier New', monospace;
-        font-size: 13px;
-        letter-spacing: 0.08em;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        opacity: 0.7;
+        transition:
+          opacity 0.2s ease,
+          transform 0.3s ease,
+          background 0.15s,
+          border-color 0.15s;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        transition: background 0.15s, border-color 0.15s;
-        text-transform: uppercase;
       }
 
-      .btn:hover {
+      .settings-toggle:hover {
+        opacity: 1;
         background: rgba(255, 255, 255, 0.15);
         border-color: rgba(255, 255, 255, 0.3);
       }
 
-      .btn:active {
-        background: rgba(255, 255, 255, 0.22);
+      .settings-toggle.active {
+        transform: rotate(90deg);
+        opacity: 1;
+      }
+
+      .settings-toggle svg {
+        width: 18px;
+        height: 18px;
+        fill: #00ff44;
+      }
+
+      .settings-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: rgba(20, 20, 20, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 12px;
+        min-width: 180px;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .settings-dropdown.active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .settings-section {
+        margin-bottom: 12px;
+      }
+
+      .settings-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .settings-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 9px;
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 8px;
+      }
+
+      .settings-buttons {
+        display: flex;
+        gap: 6px;
+      }
+
+      .settings-button {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 11px;
+        font-family: 'Courier New', monospace;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .settings-button:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .settings-button:active {
+        background: rgba(255, 255, 255, 0.18);
       }
     </style>
   </head>
   <body>
     <div id="canvas-container"></div>
     <div id="generation-counter">GEN: 0</div>
-    <div id="controls">
-      <button class="btn" id="btn-randomize">Randomize</button>
-      <button class="btn" id="btn-reset">Reset</button>
-      <button class="btn" id="btn-top-view">Top View</button>
-      <button class="btn" id="btn-iso-view">Iso View</button>
+
+    <div class="settings-menu" id="settings-menu">
+      <button class="settings-toggle" id="settings-toggle" aria-label="Toggle settings">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+          />
+        </svg>
+      </button>
+      <div class="settings-dropdown" id="settings-dropdown">
+        <div class="settings-section">
+          <span class="settings-label">Simulation</span>
+          <div class="settings-buttons">
+            <button class="settings-button" id="btn-randomize">Randomize</button>
+            <button class="settings-button" id="btn-reset">Reset</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <span class="settings-label">Patterns</span>
+          <div class="settings-buttons">
+            <button class="settings-button" id="btn-acorn">Acorn</button>
+            <button class="settings-button" id="btn-rpentomino">R-Pent</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <span class="settings-label">Camera</span>
+          <div class="settings-buttons">
+            <button class="settings-button" id="btn-top-view">Top</button>
+            <button class="settings-button" id="btn-iso-view">Iso</button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div id="footer">
+      made by <a href="https://koenvangilst.nl">Koen van Gilst</a> &bull; source on
+      <a href="https://github.com/vnglst/3d-game-of-life">github</a>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

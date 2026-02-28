@@ -102,6 +102,24 @@ export class GameOfLife {
     }
   }
 
+  rPentomino(): void {
+    this.grid.fill(0);
+    this.clearHistory();
+    // R-pentomino (3×3), centered in the grid
+    const cells = [
+      [1, 0],
+      [2, 0],
+      [0, 1],
+      [1, 1],
+      [1, 2],
+    ];
+    const ox = Math.floor(this.size / 2) - 1;
+    const oy = Math.floor(this.size / 2) - 1;
+    for (const [dx, dy] of cells) {
+      this.setCell(ox + dx, oy + dy, 1);
+    }
+  }
+
   randomize(): void {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i] = Math.random() < 0.35 ? 1 : 0;

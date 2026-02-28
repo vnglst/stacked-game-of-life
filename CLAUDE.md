@@ -1,4 +1,4 @@
-# 3D Game of Life
+# Stacked Game of Life
 
 ## Overview
 
