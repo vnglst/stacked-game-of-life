@@ -45,9 +45,11 @@ const CONFIG = {
 ### GameOfLife.ts
 - `grid: Uint8Array` — flat row-major, 1=alive, 0=dead
 - `ring: Uint8Array[]` — pre-allocated ring buffer of 8 snapshots
-- `head: number` — next write position
-- `step()` — copies current into ring[head], advances head, computes next gen using toroidal wrap
-- `getHistory(i)` — returns snapshot i steps ago (0 = most recent), null if not enough history
+- `head: number` — next write position in ring
+- `filledCount: number` — how many history slots are populated (starts at 0)
+- `generation: number` — incremented each step, displayed in UI
+- `step()` — copies current grid into ring[head], advances head, allocates new `Uint8Array` for next gen using toroidal wrap: `(x + size) % size`
+- `getHistory(i)` — returns snapshot i steps ago (0 = most recent), null if not enough history yet
 - `randomize()` — 35% density, clears history
 - `reset()` — all zeros, clears history
 
@@ -57,12 +59,16 @@ const CONFIG = {
 - Layer color: lerp t = i/(totalLayers-1); RGB lerp from `#00ff44` → `#3319e6`; opacity lerp 1.0 → 0.05
 - History layers: `transparent: true`, `depthWrite: false` (prevents z-fighting)
 - Active layer: `transparent: false`, `depthWrite: true`
-- Camera: `PerspectiveCamera(45)`, position `(gc+50, 50, gc+50)`, lookAt `(gc, stackMidY, gc)`
+- Camera: `PerspectiveCamera(45)`, position `(gc+50, 50, gc+50)`, lookAt `(gc, stackMidY, gc)` where `gc = 19.5`, `stackMidY = -6.0`
+- `updateLayer(i, grid)` — sets instance matrices for alive cells, updates `mesh.count` and `instanceMatrix.needsUpdate`
+- `onResize()` — updates camera aspect and renderer size on window resize
 
 ### main.ts
 - Time-accumulated stepping: accumulate `dt` each rAF tick, step when `>= STEP_INTERVAL_MS`
-- Reset/Randomize buttons trigger immediate re-render
+- `syncRender()` — calls `renderer.updateFromGame(current, getHistory)`, `renderer.render()`, and updates gen counter text
+- Reset/Randomize buttons reset `accumulated = 0` and call `syncRender()` immediately
 - Generation counter in top-right corner
+- `window.gameOfLife` exposes `{ game, renderer, config, animId }` for debugging
 
 ## UI
 - Two buttons (Reset, Randomize) centered at bottom with glassmorphism style
