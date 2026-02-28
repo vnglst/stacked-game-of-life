@@ -34,7 +34,7 @@ export class Renderer3D {
     // Camera
     const aspect = container.clientWidth / container.clientHeight;
     this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-    const gc = (config.GRID_SIZE - 1) / 2; // grid center
+    const gc = (config.GRID_SIZE - 1) * config.CELL_SPACING / 2; // grid center
     const stackMidY = -((this.totalLayers - 1) * config.LAYER_SPACING) / 2;
     this.camera.position.set(gc + 50, 50, gc + 50);
     this.camera.lookAt(gc, stackMidY, gc);
@@ -65,6 +65,7 @@ export class Renderer3D {
 
       const mesh = new THREE.InstancedMesh(this.geometry, material, maxInstances);
       mesh.count = 0;
+      mesh.frustumCulled = false; // instances span the full grid; geometry bounding sphere is too small
       // Y position: active layer at 0, history sinks down
       mesh.position.y = -i * config.LAYER_SPACING;
       this.scene.add(mesh);
@@ -106,8 +107,8 @@ export class Renderer3D {
       );
       raycaster.setFromCamera(pointer, this.camera);
       if (raycaster.ray.intersectPlane(plane, hit)) {
-        const x = Math.round(hit.x);
-        const z = Math.round(hit.z);
+        const x = Math.round(hit.x / this.config.CELL_SPACING);
+        const z = Math.round(hit.z / this.config.CELL_SPACING);
         onCell(x, z);
       }
     });
@@ -134,7 +135,7 @@ export class Renderer3D {
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         if (grid[y * size + x] === 1) {
-          this.dummy.position.set(x, 0, y);
+          this.dummy.position.set(x * this.config.CELL_SPACING, 0, y * this.config.CELL_SPACING);
           this.dummy.updateMatrix();
           mesh.setMatrixAt(count, this.dummy.matrix);
           count++;
@@ -164,7 +165,7 @@ export class Renderer3D {
   }
 
   topView(): void {
-    const gc = (this.config.GRID_SIZE - 1) / 2;
+    const gc = (this.config.GRID_SIZE - 1) * this.config.CELL_SPACING / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
     this.camera.position.set(gc, stackMidY + 80, gc);
     this.controls.target.set(gc, stackMidY, gc);
@@ -172,7 +173,7 @@ export class Renderer3D {
   }
 
   isoView(): void {
-    const gc = (this.config.GRID_SIZE - 1) / 2;
+    const gc = (this.config.GRID_SIZE - 1) * this.config.CELL_SPACING / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
     this.camera.position.set(gc + 50, 50, gc + 50);
     this.controls.target.set(gc, stackMidY, gc);

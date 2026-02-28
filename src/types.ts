@@ -5,6 +5,7 @@ export interface Config {
   CELL_W: number;
   CELL_H: number;
   CELL_D: number;
+  CELL_SPACING: number;
   STEP_INTERVAL_MS: number;
   ACTIVE_COLOR: number;
   FADED_COLOR: number;
