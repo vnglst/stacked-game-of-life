@@ -2,7 +2,7 @@
 
 A 3D visualization of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) where each generation sinks down into a glowing history stack.
 
-![Stacked Game of Life](https://stacked-game-of-life.koenvangilst.nl/preview.png)
+![Stacked Game of Life](https://github.com/user-attachments/assets/13fd4fc1-75ee-4825-b09d-f9513d33feeb)
 
 ## Overview
 
