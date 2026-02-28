@@ -4,10 +4,10 @@ import type { Config } from './types.ts';
 
 const CONFIG: Config = {
   GRID_SIZE: 40,
-  HISTORY_LAYERS: 8,
+  HISTORY_LAYERS: 20,
   LAYER_SPACING: 1.5,
   CELL_W: 0.8,
-  CELL_H: 0.15,
+  CELL_H: 0.8,
   CELL_D: 0.8,
   STEP_INTERVAL_MS: 150,
   ACTIVE_COLOR: 0x00ff44,
