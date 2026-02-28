@@ -44,7 +44,7 @@ export class Renderer3D {
     this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
     const gc = ((config.GRID_SIZE - 1) * config.CELL_SPACING) / 2; // grid center
     const stackMidY = -((this.totalLayers - 1) * config.LAYER_SPACING) / 2;
-    this.camera.position.set(gc + 50, 50, gc + 50);
+    this.camera.position.set(gc + 70, 70, gc + 70);
     this.camera.lookAt(gc, stackMidY, gc);
 
     // Orbit controls — drag to rotate, scroll to zoom, right-drag to pan
@@ -56,7 +56,7 @@ export class Renderer3D {
     // Compute spherical coords for intro start/end relative to orbit target
     // Start: top-down (polar angle ~0, looking straight down)
     // End: isometric (gc+50, 50, gc+50) relative to target
-    const isoOffset = new THREE.Vector3(50, 50 - stackMidY, 50);
+    const isoOffset = new THREE.Vector3(70, 70 - stackMidY, 70);
     this.introEndSpherical = new THREE.Spherical().setFromVector3(isoOffset);
     // Start: same radius, but nearly straight above (small polar angle)
     this.introStartSpherical = new THREE.Spherical(
@@ -238,7 +238,7 @@ export class Renderer3D {
     this.cancelIntro();
     const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
-    this.camera.position.set(gc + 50, 50, gc + 50);
+    this.camera.position.set(gc + 70, 70, gc + 70);
     this.controls.target.set(gc, stackMidY, gc);
     this.controls.update();
   }
