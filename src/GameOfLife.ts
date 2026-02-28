@@ -120,6 +120,44 @@ export class GameOfLife {
     }
   }
 
+  glider(): void {
+    this.grid.fill(0);
+    this.clearHistory();
+    // Glider pattern (3×3), centered in the grid
+    const cells = [
+      [1, 0],
+      [2, 1],
+      [0, 2],
+      [1, 2],
+      [2, 2],
+    ];
+    const ox = Math.floor(this.size / 2) - 1;
+    const oy = Math.floor(this.size / 2) - 1;
+    for (const [dx, dy] of cells) {
+      this.setCell(ox + dx, oy + dy, 1);
+    }
+  }
+
+  diehard(): void {
+    this.grid.fill(0);
+    this.clearHistory();
+    // Diehard pattern (8×3), centered in the grid
+    const cells = [
+      [6, 0],
+      [0, 1],
+      [1, 1],
+      [1, 2],
+      [5, 2],
+      [6, 2],
+      [7, 2],
+    ];
+    const ox = Math.floor(this.size / 2) - 3;
+    const oy = Math.floor(this.size / 2) - 1;
+    for (const [dx, dy] of cells) {
+      this.setCell(ox + dx, oy + dy, 1);
+    }
+  }
+
   randomize(): void {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i] = Math.random() < 0.35 ? 1 : 0;

@@ -92,6 +92,18 @@ document.getElementById('btn-rpentomino')!.addEventListener('click', () => {
   syncRender();
 });
 
+document.getElementById('btn-glider')!.addEventListener('click', () => {
+  game.glider();
+  accumulated = 0;
+  syncRender();
+});
+
+document.getElementById('btn-diehard')!.addEventListener('click', () => {
+  game.diehard();
+  accumulated = 0;
+  syncRender();
+});
+
 document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
 document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
 
