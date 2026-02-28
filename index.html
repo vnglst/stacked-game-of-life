@@ -26,17 +26,6 @@
         display: block;
       }
 
-      #generation-counter {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        color: #00ff44;
-        font-size: 14px;
-        letter-spacing: 0.05em;
-        text-shadow: 0 0 8px #00ff4480;
-        pointer-events: none;
-      }
-
       #footer {
         position: fixed;
         bottom: 16px;
@@ -74,28 +63,21 @@
       }
 
       .settings-toggle {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
+        background: transparent;
+        border: none;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 8px;
+        padding: 4px;
         opacity: 0.7;
         transition:
           opacity 0.2s ease,
-          transform 0.3s ease,
-          background 0.15s,
-          border-color 0.15s;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+          transform 0.3s ease;
       }
 
       .settings-toggle:hover {
         opacity: 1;
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.3);
       }
 
       .settings-toggle.active {
@@ -114,8 +96,8 @@
         top: 100%;
         right: 0;
         margin-top: 8px;
-        background: rgba(20, 20, 20, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(0, 20, 5, 0.95);
+        border: 1px solid rgba(0, 255, 68, 0.2);
         border-radius: 8px;
         padding: 12px;
         min-width: 180px;
@@ -126,6 +108,7 @@
           opacity 0.3s ease,
           transform 0.3s ease;
         backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0, 255, 68, 0.1);
       }
 
       .settings-dropdown.active {
@@ -144,7 +127,7 @@
 
       .settings-label {
         display: block;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(0, 255, 68, 0.5);
         font-size: 9px;
         font-family: 'Courier New', monospace;
         text-transform: uppercase;
@@ -159,10 +142,10 @@
 
       .settings-button {
         flex: 1;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 255, 68, 0.06);
+        border: 1px solid rgba(0, 255, 68, 0.15);
         border-radius: 6px;
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(0, 255, 68, 0.7);
         font-size: 11px;
         font-family: 'Courier New', monospace;
         padding: 8px 12px;
@@ -173,19 +156,19 @@
       }
 
       .settings-button:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.25);
-        color: rgba(255, 255, 255, 0.9);
+        background: rgba(0, 255, 68, 0.12);
+        border-color: rgba(0, 255, 68, 0.35);
+        color: rgba(0, 255, 68, 0.95);
+        box-shadow: 0 0 10px rgba(0, 255, 68, 0.2);
       }
 
       .settings-button:active {
-        background: rgba(255, 255, 255, 0.18);
+        background: rgba(0, 255, 68, 0.2);
       }
     </style>
   </head>
   <body>
     <div id="canvas-container"></div>
-    <div id="generation-counter">GEN: 0</div>
 
     <div class="settings-menu" id="settings-menu">
       <button class="settings-toggle" id="settings-toggle" aria-label="Toggle settings">

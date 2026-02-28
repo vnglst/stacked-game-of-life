@@ -17,7 +17,6 @@ const CONFIG: Config = {
 };
 
 const container = document.getElementById('canvas-container')!;
-const genCounter = document.getElementById('generation-counter')!;
 
 const game = new GameOfLife(CONFIG.GRID_SIZE, CONFIG.HISTORY_LAYERS);
 const renderer = new Renderer3D(container, CONFIG);
@@ -34,7 +33,6 @@ function syncRender(progress = 1): void {
     game.dyingMask,
   );
   renderer.render();
-  genCounter.textContent = `GEN: ${game.generation}`;
 }
 
 // Initial render
