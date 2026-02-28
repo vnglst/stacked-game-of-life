@@ -1,23 +1,43 @@
-import * as THREE from 'three';
+import {
+  WebGLRenderer,
+  Scene,
+  PerspectiveCamera,
+  BoxGeometry,
+  MeshBasicMaterial,
+  InstancedMesh,
+  Vector3,
+  Vector2,
+  Plane,
+  Raycaster,
+  Spherical,
+  Matrix4,
+} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Config } from './types.ts';
 
 export class Renderer3D {
-  private renderer: THREE.WebGLRenderer;
-  private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
-  private meshes: THREE.InstancedMesh[];
-  private geometry: THREE.BoxGeometry;
+  private renderer: WebGLRenderer;
+  private scene: Scene;
+  private camera: PerspectiveCamera;
+  private meshes: InstancedMesh[];
+  private geometry: BoxGeometry;
   private totalLayers: number;
   private config: Config;
   private controls: OrbitControls;
-  private dummy = new THREE.Object3D();
+  private dummy = {
+    position: new Vector3(),
+    scale: new Vector3(1, 1, 1),
+    matrix: new Matrix4(),
+  };
+
+  // Cache for history layers - stores grid snapshots to avoid re-processing
+  private historyCache: (Uint8Array | null)[] = [];
 
   // Intro animation state
   private introPhase: 'hold' | 'sweep' | 'orbit' | 'done' = 'hold';
   private introStartTime = performance.now();
-  private introStartSpherical!: THREE.Spherical;
-  private introEndSpherical!: THREE.Spherical;
+  private introStartSpherical!: Spherical;
+  private introEndSpherical!: Spherical;
   private static readonly HOLD_DURATION = 3000;
   private static readonly SWEEP_DURATION = 5000;
 
@@ -26,7 +46,7 @@ export class Renderer3D {
     this.totalLayers = config.HISTORY_LAYERS + 1;
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.setClearColor(config.BACKGROUND_COLOR);
@@ -34,14 +54,14 @@ export class Renderer3D {
     container.appendChild(this.renderer.domElement);
 
     // Scene
-    this.scene = new THREE.Scene();
+    this.scene = new Scene();
 
     // Shared geometry
-    this.geometry = new THREE.BoxGeometry(config.CELL_W, config.CELL_H, config.CELL_D);
+    this.geometry = new BoxGeometry(config.CELL_W, config.CELL_H, config.CELL_D);
 
     // Camera
     const aspect = container.clientWidth / container.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+    this.camera = new PerspectiveCamera(45, aspect, 0.1, 1000);
     const gc = ((config.GRID_SIZE - 1) * config.CELL_SPACING) / 2; // grid center
     const stackMidY = -((this.totalLayers - 1) * config.LAYER_SPACING) / 2;
     this.camera.position.set(gc + 70, 70, gc + 70);
@@ -56,17 +76,17 @@ export class Renderer3D {
     // Compute spherical coords for intro start/end relative to orbit target
     // Start: top-down (polar angle ~0, looking straight down)
     // End: isometric (gc+50, 50, gc+50) relative to target
-    const isoOffset = new THREE.Vector3(70, 70 - stackMidY, 70);
-    this.introEndSpherical = new THREE.Spherical().setFromVector3(isoOffset);
+    const isoOffset = new Vector3(70, 70 - stackMidY, 70);
+    this.introEndSpherical = new Spherical().setFromVector3(isoOffset);
     // Start: same radius, but nearly straight above (small polar angle)
-    this.introStartSpherical = new THREE.Spherical(
+    this.introStartSpherical = new Spherical(
       80 - stackMidY, // radius (height above target)
       0.01, // phi: nearly top-down (tiny offset avoids gimbal lock)
       this.introEndSpherical.theta, // same azimuth so no horizontal rotation
     );
 
     // Position camera at intro start
-    const startOffset = new THREE.Vector3().setFromSpherical(this.introStartSpherical);
+    const startOffset = new Vector3().setFromSpherical(this.introStartSpherical);
     this.camera.position.copy(this.controls.target).add(startOffset);
     this.controls.enabled = false;
     this.controls.update();
@@ -86,14 +106,14 @@ export class Renderer3D {
       const opacity = 1.0 - t * (1.0 - 0.05);
       const isActive = i === 0;
 
-      const material = new THREE.MeshBasicMaterial({
+      const material = new MeshBasicMaterial({
         color,
         opacity,
         transparent: !isActive,
         depthWrite: isActive,
       });
 
-      const mesh = new THREE.InstancedMesh(this.geometry, material, maxInstances);
+      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
       mesh.count = 0;
       mesh.frustumCulled = false; // instances span the full grid; geometry bounding sphere is too small
       // Y position: active layer at 0, history sinks down
@@ -102,16 +122,19 @@ export class Renderer3D {
       this.meshes.push(mesh);
     }
 
+    // Initialize history caches
+    this.historyCache = new Array(this.totalLayers).fill(null);
+
     // Handle resize
     window.addEventListener('resize', () => this.onResize(container));
   }
 
   setClickHandler(onCell: (x: number, z: number) => void): void {
     const canvas = this.renderer.domElement;
-    const raycaster = new THREE.Raycaster();
-    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // y = 0
-    const pointer = new THREE.Vector2();
-    const hit = new THREE.Vector3();
+    const raycaster = new Raycaster();
+    const plane = new Plane(new Vector3(0, 1, 0), 0); // y = 0
+    const pointer = new Vector2();
+    const hit = new Vector3();
     let dragDist = 0;
     let downX = 0;
     let downY = 0;
@@ -181,15 +204,16 @@ export class Renderer3D {
         const scale = dying ? 1 - progress : born ? progress : 1;
 
         this.dummy.position.set(x * this.config.CELL_SPACING, 0, y * this.config.CELL_SPACING);
-        this.dummy.scale.setScalar(scale);
-        this.dummy.updateMatrix();
+        this.dummy.scale.set(scale, scale, scale);
+        this.dummy.matrix.makeScale(this.dummy.scale.x, this.dummy.scale.y, this.dummy.scale.z);
+        this.dummy.matrix.setPosition(this.dummy.position);
         mesh.setMatrixAt(count, this.dummy.matrix);
         count++;
       }
     }
 
     // Reset dummy scale so history layers (no masks) render at full size
-    this.dummy.scale.setScalar(1);
+    this.dummy.scale.set(1, 1, 1);
 
     mesh.count = count;
     mesh.instanceMatrix.needsUpdate = true;
@@ -202,19 +226,31 @@ export class Renderer3D {
     bornMask?: Uint8Array,
     dyingMask?: Uint8Array,
   ): void {
-    // Layer 0 = active (current generation)
+    // Layer 0 = active (current generation) - always update for animation
     this.updateLayer(0, current, progress, bornMask, dyingMask);
 
-    // Layers 1..HISTORY_LAYERS = history (most recent first)
+    // Layers 1..HISTORY_LAYES = history (most recent first)
+    // Only update when history data changes (cache miss) for performance
     for (let i = 1; i < this.totalLayers; i++) {
       const hist = getHistory(i - 1);
-      if (hist) {
-        this.updateLayer(i, hist);
-      } else {
+      const cached = this.historyCache[i];
+
+      if (!hist) {
         // No history yet for this slot — hide it
-        this.meshes[i].count = 0;
-        this.meshes[i].instanceMatrix.needsUpdate = true;
+        if (cached !== null) {
+          this.meshes[i].count = 0;
+          this.meshes[i].instanceMatrix.needsUpdate = true;
+          this.historyCache[i] = null;
+        }
+        continue;
       }
+
+      // Check if history changed (different reference or content)
+      if (hist !== cached) {
+        this.updateLayer(i, hist);
+        this.historyCache[i] = hist;
+      }
+      // else: same history, skip re-processing
     }
   }
 
@@ -266,12 +302,12 @@ export class Renderer3D {
       // Interpolate spherical coordinates for smooth rotation
       const s = this.introStartSpherical;
       const e = this.introEndSpherical;
-      const current = new THREE.Spherical(
+      const current = new Spherical(
         s.radius + (e.radius - s.radius) * t,
         s.phi + (e.phi - s.phi) * t,
         s.theta + (e.theta - s.theta) * t,
       );
-      const offset = new THREE.Vector3().setFromSpherical(current);
+      const offset = new Vector3().setFromSpherical(current);
       this.camera.position.copy(this.controls.target).add(offset);
       this.camera.lookAt(this.controls.target);
 

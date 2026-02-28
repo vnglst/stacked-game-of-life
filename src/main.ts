@@ -104,6 +104,18 @@ document.getElementById('btn-diehard')!.addEventListener('click', () => {
   syncRender();
 });
 
+document.getElementById('btn-gosper')!.addEventListener('click', () => {
+  game.gosper();
+  accumulated = 0;
+  syncRender();
+});
+
+document.getElementById('btn-pulsar')!.addEventListener('click', () => {
+  game.pulsar();
+  accumulated = 0;
+  syncRender();
+});
+
 document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
 document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
 

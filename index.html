@@ -142,6 +142,7 @@
 
       .settings-buttons {
         display: flex;
+        flex-wrap: wrap;
         gap: 6px;
       }
 
@@ -170,6 +171,10 @@
       .settings-button:active {
         background: rgba(0, 255, 68, 0.2);
       }
+
+      .settings-buttons-patterns .settings-button {
+        flex: 1 1 100%;
+      }
     </style>
   </head>
   <body>
@@ -186,14 +191,18 @@
       <div class="settings-dropdown" id="settings-dropdown">
         <div class="settings-section">
           <span class="settings-label">Simulation</span>
-          <div class="settings-buttons">
-            <button class="settings-button" id="btn-randomize">Randomize</button>
-            <button class="settings-button" id="btn-reset">Reset</button>
+          <div class="settings-buttons settings-buttons-patterns">
+            <button class="settings-button" id="btn-acorn">Acorn</button>
+            <button class="settings-button" id="btn-rpentomino">R-Pentomino</button>
+            <button class="settings-button" id="btn-glider">Glider</button>
+            <button class="settings-button" id="btn-diehard">Diehard</button>
+            <button class="settings-button" id="btn-gosper">Gosper Gun</button>
+            <button class="settings-button" id="btn-pulsar">Pulsar</button>
           </div>
         </div>
         <div class="settings-section">
           <span class="settings-label">Patterns</span>
-          <div class="settings-buttons">
+          <div class="settings-buttons settings-buttons-patterns">
             <button class="settings-button" id="btn-acorn">Acorn</button>
             <button class="settings-button" id="btn-rpentomino">R-Pent</button>
             <button class="settings-button" id="btn-glider">Glider</button>
