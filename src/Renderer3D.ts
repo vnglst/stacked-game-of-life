@@ -24,6 +24,8 @@ export class Renderer3D {
   private totalLayers: number;
   private config: Config;
   private controls: OrbitControls;
+  private gc: number;
+  private stackMidY: number;
   private dummy = {
     position: new Vector3(),
     scale: new Vector3(1, 1, 1),
@@ -57,13 +59,15 @@ export class Renderer3D {
     this.scene = new Scene();
 
     // Shared geometry
-    this.geometry = new BoxGeometry(config.CELL_W, config.CELL_H, config.CELL_D);
+    this.geometry = new BoxGeometry(config.CELL_SIZE, config.CELL_SIZE, config.CELL_SIZE);
 
     // Camera
     const aspect = container.clientWidth / container.clientHeight;
     this.camera = new PerspectiveCamera(45, aspect, 0.1, 1000);
-    const gc = ((config.GRID_SIZE - 1) * config.CELL_SPACING) / 2; // grid center
-    const stackMidY = -((this.totalLayers - 1) * config.LAYER_SPACING) / 2;
+    this.gc = ((config.GRID_SIZE - 1) * config.CELL_SPACING) / 2;
+    this.stackMidY = -((this.totalLayers - 1) * config.LAYER_SPACING) / 2;
+    const gc = this.gc;
+    const stackMidY = this.stackMidY;
     this.camera.position.set(gc + 70, 70, gc + 70);
     this.camera.lookAt(gc, stackMidY, gc);
 
@@ -263,19 +267,15 @@ export class Renderer3D {
 
   topView(): void {
     this.cancelIntro();
-    const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
-    const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
-    this.camera.position.set(gc, stackMidY + 80, gc);
-    this.controls.target.set(gc, stackMidY, gc);
+    this.camera.position.set(this.gc, this.stackMidY + 80, this.gc);
+    this.controls.target.set(this.gc, this.stackMidY, this.gc);
     this.controls.update();
   }
 
   isoView(): void {
     this.cancelIntro();
-    const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
-    const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
-    this.camera.position.set(gc + 70, 70, gc + 70);
-    this.controls.target.set(gc, stackMidY, gc);
+    this.camera.position.set(this.gc + 70, 70, this.gc + 70);
+    this.controls.target.set(this.gc, this.stackMidY, this.gc);
     this.controls.update();
   }
 

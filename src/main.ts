@@ -6,9 +6,7 @@ const CONFIG: Config = {
   GRID_SIZE: 100,
   HISTORY_LAYERS: 30,
   LAYER_SPACING: 0.8,
-  CELL_W: 0.8,
-  CELL_H: 0.8,
-  CELL_D: 0.8,
+  CELL_SIZE: 0.8,
   CELL_SPACING: 0.8,
   STEP_INTERVAL_MS: 50,
   ACTIVE_COLOR: 0x00ff41,
@@ -68,53 +66,24 @@ renderer.setClickHandler((x, z) => {
 });
 
 // Button handlers
-document.getElementById('btn-randomize')!.addEventListener('click', () => {
-  game.randomize();
-  accumulated = 0;
-  syncRender();
-});
+const patterns: Record<string, () => void> = {
+  'btn-randomize': () => game.randomize(),
+  'btn-reset': () => game.reset(),
+  'btn-acorn': () => game.acorn(),
+  'btn-rpentomino': () => game.rPentomino(),
+  'btn-glider': () => game.glider(),
+  'btn-diehard': () => game.diehard(),
+  'btn-gosper': () => game.gosper(),
+  'btn-pulsar': () => game.pulsar(),
+};
 
-document.getElementById('btn-reset')!.addEventListener('click', () => {
-  game.reset();
-  accumulated = 0;
-  syncRender();
-});
-
-document.getElementById('btn-acorn')!.addEventListener('click', () => {
-  game.acorn();
-  accumulated = 0;
-  syncRender();
-});
-
-document.getElementById('btn-rpentomino')!.addEventListener('click', () => {
-  game.rPentomino();
-  accumulated = 0;
-  syncRender();
-});
-
-document.getElementById('btn-glider')!.addEventListener('click', () => {
-  game.glider();
-  accumulated = 0;
-  syncRender();
-});
-
-document.getElementById('btn-diehard')!.addEventListener('click', () => {
-  game.diehard();
-  accumulated = 0;
-  syncRender();
-});
-
-document.getElementById('btn-gosper')!.addEventListener('click', () => {
-  game.gosper();
-  accumulated = 0;
-  syncRender();
-});
-
-document.getElementById('btn-pulsar')!.addEventListener('click', () => {
-  game.pulsar();
-  accumulated = 0;
-  syncRender();
-});
+for (const [id, action] of Object.entries(patterns)) {
+  document.getElementById(id)!.addEventListener('click', () => {
+    action();
+    accumulated = 0;
+    syncRender();
+  });
+}
 
 document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
 document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
