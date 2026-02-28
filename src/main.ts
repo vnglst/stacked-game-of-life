@@ -56,6 +56,11 @@ function animate(now: number): void {
 
 animId = requestAnimationFrame(animate);
 
+renderer.setClickHandler((x, z) => {
+  game.setCell(x, z, 1);
+  syncRender();
+});
+
 // Button handlers
 document.getElementById('btn-randomize')!.addEventListener('click', () => {
   game.randomize();
@@ -68,6 +73,9 @@ document.getElementById('btn-reset')!.addEventListener('click', () => {
   accumulated = 0;
   syncRender();
 });
+
+document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
+document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
 
 // Expose for debugging
 (window as unknown as Record<string, unknown>).gameOfLife = { game, renderer, config: CONFIG, animId };

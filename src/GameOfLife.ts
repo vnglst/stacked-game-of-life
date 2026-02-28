@@ -64,6 +64,11 @@ export class GameOfLife {
     return this.ring[idx];
   }
 
+  setCell(x: number, z: number, value: 0 | 1): void {
+    if (x < 0 || x >= this.size || z < 0 || z >= this.size) return;
+    this.grid[z * this.size + x] = value;
+  }
+
   randomize(): void {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i] = Math.random() < 0.35 ? 1 : 0;

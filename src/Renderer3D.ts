@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Config } from './types.ts';
 
 export class Renderer3D {
@@ -9,6 +10,7 @@ export class Renderer3D {
   private geometry: THREE.BoxGeometry;
   private totalLayers: number;
   private config: Config;
+  private controls: OrbitControls;
   private dummy = new THREE.Object3D();
 
   constructor(container: HTMLElement, config: Config) {
@@ -37,6 +39,13 @@ export class Renderer3D {
     this.camera.position.set(gc + 50, 50, gc + 50);
     this.camera.lookAt(gc, stackMidY, gc);
 
+    // Orbit controls — drag to rotate, scroll to zoom, right-drag to pan
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.target.set(gc, stackMidY, gc);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.update();
+
     // Create one InstancedMesh per layer
     const maxInstances = config.GRID_SIZE * config.GRID_SIZE;
     this.meshes = [];
@@ -64,6 +73,44 @@ export class Renderer3D {
 
     // Handle resize
     window.addEventListener('resize', () => this.onResize(container));
+  }
+
+  setClickHandler(onCell: (x: number, z: number) => void): void {
+    const canvas = this.renderer.domElement;
+    const raycaster = new THREE.Raycaster();
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // y = 0
+    const pointer = new THREE.Vector2();
+    const hit = new THREE.Vector3();
+    let dragDist = 0;
+    let downX = 0;
+    let downY = 0;
+
+    canvas.addEventListener('pointerdown', (e) => {
+      downX = e.clientX;
+      downY = e.clientY;
+      dragDist = 0;
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      const dx = e.clientX - downX;
+      const dy = e.clientY - downY;
+      dragDist = Math.hypot(dx, dy);
+    });
+
+    canvas.addEventListener('pointerup', (e) => {
+      if (dragDist > 5) return; // ignore drags (orbit control)
+      const rect = canvas.getBoundingClientRect();
+      pointer.set(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+      raycaster.setFromCamera(pointer, this.camera);
+      if (raycaster.ray.intersectPlane(plane, hit)) {
+        const x = Math.round(hit.x);
+        const z = Math.round(hit.z);
+        onCell(x, z);
+      }
+    });
   }
 
   private lerpColor(from: number, to: number, t: number): number {
@@ -116,7 +163,24 @@ export class Renderer3D {
     }
   }
 
+  topView(): void {
+    const gc = (this.config.GRID_SIZE - 1) / 2;
+    const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
+    this.camera.position.set(gc, stackMidY + 80, gc);
+    this.controls.target.set(gc, stackMidY, gc);
+    this.controls.update();
+  }
+
+  isoView(): void {
+    const gc = (this.config.GRID_SIZE - 1) / 2;
+    const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
+    this.camera.position.set(gc + 50, 50, gc + 50);
+    this.controls.target.set(gc, stackMidY, gc);
+    this.controls.update();
+  }
+
   render(): void {
+    this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
 
