@@ -1,15 +1,19 @@
 # 3D Game of Life
 
 ## Overview
-3D visualization of Conway's Game of Life. The current generation sits on top; each step the previous generation sinks down into a history stack below. 8 history layers fade in opacity and color (bright green → blue/violet), giving a glowing 3D time-slice effect from a fixed isometric camera.
+
+3D visualization of Conway's Game of Life. The current generation sits on top; each step the previous generation sinks down into a history stack below. 8 history layers fade in opacity and color giving a glowing 3D time-slice effect from a fixed isometric camera.
 
 ## Tech Stack
+
 TypeScript + Vite + Three.js
 
 ## Running
+
 ```bash
 npm install && npm run dev
 ```
+
 Opens at http://localhost:5173
 
 ## Non-obvious design decisions
