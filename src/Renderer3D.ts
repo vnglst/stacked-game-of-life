@@ -127,29 +127,53 @@ export class Renderer3D {
     return (r << 16) | (g << 8) | b;
   }
 
-  updateLayer(layerIndex: number, grid: Uint8Array): void {
+  updateLayer(
+    layerIndex: number,
+    grid: Uint8Array,
+    progress = 1,
+    bornMask?: Uint8Array,
+    dyingMask?: Uint8Array,
+  ): void {
     const mesh = this.meshes[layerIndex];
     const size = this.config.GRID_SIZE;
     let count = 0;
 
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        if (grid[y * size + x] === 1) {
-          this.dummy.position.set(x * this.config.CELL_SPACING, 0, y * this.config.CELL_SPACING);
-          this.dummy.updateMatrix();
-          mesh.setMatrixAt(count, this.dummy.matrix);
-          count++;
-        }
+        const i = y * size + x;
+        const alive = grid[i] === 1;
+        const born = bornMask?.[i] === 1;
+        const dying = dyingMask?.[i] === 1;
+
+        // Include alive cells (current gen) and dying cells (fading out)
+        if (!alive && !dying) continue;
+
+        const scale = dying ? 1 - progress : born ? progress : 1;
+
+        this.dummy.position.set(x * this.config.CELL_SPACING, 0, y * this.config.CELL_SPACING);
+        this.dummy.scale.setScalar(scale);
+        this.dummy.updateMatrix();
+        mesh.setMatrixAt(count, this.dummy.matrix);
+        count++;
       }
     }
+
+    // Reset dummy scale so history layers (no masks) render at full size
+    this.dummy.scale.setScalar(1);
 
     mesh.count = count;
     mesh.instanceMatrix.needsUpdate = true;
   }
 
-  updateFromGame(current: Uint8Array, getHistory: (i: number) => Uint8Array | null): void {
+  updateFromGame(
+    current: Uint8Array,
+    getHistory: (i: number) => Uint8Array | null,
+    progress = 1,
+    bornMask?: Uint8Array,
+    dyingMask?: Uint8Array,
+  ): void {
     // Layer 0 = active (current generation)
-    this.updateLayer(0, current);
+    this.updateLayer(0, current, progress, bornMask, dyingMask);
 
     // Layers 1..HISTORY_LAYERS = history (most recent first)
     for (let i = 1; i < this.totalLayers; i++) {

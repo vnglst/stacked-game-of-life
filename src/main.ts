@@ -25,8 +25,14 @@ const renderer = new Renderer3D(container, CONFIG);
 // Start with acorn pattern
 game.acorn();
 
-function syncRender(): void {
-  renderer.updateFromGame(game.grid, (i) => game.getHistory(i));
+function syncRender(progress = 1): void {
+  renderer.updateFromGame(
+    game.grid,
+    (i) => game.getHistory(i),
+    progress,
+    game.bornMask,
+    game.dyingMask,
+  );
   renderer.render();
   genCounter.textContent = `GEN: ${game.generation}`;
 }
@@ -48,11 +54,11 @@ function animate(now: number): void {
   if (accumulated >= CONFIG.STEP_INTERVAL_MS) {
     accumulated -= CONFIG.STEP_INTERVAL_MS;
     game.step();
-    syncRender();
-  } else {
-    // Still render every frame so the canvas stays alive
-    renderer.render();
   }
+
+  // Render every frame with interpolated progress for smooth cell animations
+  const progress = accumulated / CONFIG.STEP_INTERVAL_MS;
+  syncRender(progress);
 }
 
 animId = requestAnimationFrame(animate);

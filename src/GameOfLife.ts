@@ -2,6 +2,8 @@ export class GameOfLife {
   readonly size: number;
   readonly historySize: number;
   grid: Uint8Array;
+  bornMask: Uint8Array;
+  dyingMask: Uint8Array;
   private ring: Uint8Array[];
   private head: number;
   private filledCount: number;
@@ -11,6 +13,8 @@ export class GameOfLife {
     this.size = size;
     this.historySize = historySize;
     this.grid = new Uint8Array(size * size);
+    this.bornMask = new Uint8Array(size * size);
+    this.dyingMask = new Uint8Array(size * size);
     this.ring = Array.from({ length: historySize }, () => new Uint8Array(size * size));
     this.head = 0;
     this.filledCount = 0;
@@ -37,6 +41,15 @@ export class GameOfLife {
         }
       }
     }
+
+    // Track which cells are born or dying this step
+    for (let i = 0; i < this.grid.length; i++) {
+      const was = this.grid[i];
+      const will = next[i];
+      this.bornMask[i] = was === 0 && will === 1 ? 1 : 0;
+      this.dyingMask[i] = was === 1 && will === 0 ? 1 : 0;
+    }
+
     this.grid = next;
     this.generation++;
   }
@@ -97,6 +110,8 @@ export class GameOfLife {
     this.head = 0;
     this.filledCount = 0;
     this.generation = 0;
+    this.bornMask.fill(0);
+    this.dyingMask.fill(0);
     for (const buf of this.ring) buf.fill(0);
   }
 }
