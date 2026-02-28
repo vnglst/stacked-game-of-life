@@ -69,6 +69,18 @@ export class GameOfLife {
     this.grid[z * this.size + x] = value;
   }
 
+  acorn(): void {
+    this.grid.fill(0);
+    this.clearHistory();
+    // Acorn pattern (7×3), centered in the grid
+    const cells = [[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]];
+    const ox = Math.floor(this.size / 2) - 3;
+    const oy = Math.floor(this.size / 2) - 1;
+    for (const [dx, dy] of cells) {
+      this.setCell(ox + dx, oy + dy, 1);
+    }
+  }
+
   randomize(): void {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i] = Math.random() < 0.35 ? 1 : 0;
