@@ -86,7 +86,15 @@ export class GameOfLife {
     this.grid.fill(0);
     this.clearHistory();
     // Acorn pattern (7×3), centered in the grid
-    const cells = [[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]];
+    const cells = [
+      [1, 0],
+      [3, 1],
+      [0, 2],
+      [1, 2],
+      [4, 2],
+      [5, 2],
+      [6, 2],
+    ];
     const ox = Math.floor(this.size / 2) - 3;
     const oy = Math.floor(this.size / 2) - 1;
     for (const [dx, dy] of cells) {

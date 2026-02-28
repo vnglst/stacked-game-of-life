@@ -34,7 +34,7 @@ export class Renderer3D {
     // Camera
     const aspect = container.clientWidth / container.clientHeight;
     this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-    const gc = (config.GRID_SIZE - 1) * config.CELL_SPACING / 2; // grid center
+    const gc = ((config.GRID_SIZE - 1) * config.CELL_SPACING) / 2; // grid center
     const stackMidY = -((this.totalLayers - 1) * config.LAYER_SPACING) / 2;
     this.camera.position.set(gc + 50, 50, gc + 50);
     this.camera.lookAt(gc, stackMidY, gc);
@@ -189,7 +189,7 @@ export class Renderer3D {
   }
 
   topView(): void {
-    const gc = (this.config.GRID_SIZE - 1) * this.config.CELL_SPACING / 2;
+    const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
     this.camera.position.set(gc, stackMidY + 80, gc);
     this.controls.target.set(gc, stackMidY, gc);
@@ -197,7 +197,7 @@ export class Renderer3D {
   }
 
   isoView(): void {
-    const gc = (this.config.GRID_SIZE - 1) * this.config.CELL_SPACING / 2;
+    const gc = ((this.config.GRID_SIZE - 1) * this.config.CELL_SPACING) / 2;
     const stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
     this.camera.position.set(gc + 50, 50, gc + 50);
     this.controls.target.set(gc, stackMidY, gc);

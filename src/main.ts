@@ -1,10 +1,10 @@
-import { GameOfLife } from "./GameOfLife.ts";
-import { Renderer3D } from "./Renderer3D.ts";
-import type { Config } from "./types.ts";
+import { GameOfLife } from './GameOfLife.ts';
+import { Renderer3D } from './Renderer3D.ts';
+import type { Config } from './types.ts';
 
 const CONFIG: Config = {
   GRID_SIZE: 100,
-  HISTORY_LAYERS: 20,
+  HISTORY_LAYERS: 30,
   LAYER_SPACING: 0.8,
   CELL_W: 0.8,
   CELL_H: 0.8,
@@ -16,8 +16,8 @@ const CONFIG: Config = {
   BACKGROUND_COLOR: 0x000000,
 };
 
-const container = document.getElementById("canvas-container")!;
-const genCounter = document.getElementById("generation-counter")!;
+const container = document.getElementById('canvas-container')!;
+const genCounter = document.getElementById('generation-counter')!;
 
 const game = new GameOfLife(CONFIG.GRID_SIZE, CONFIG.HISTORY_LAYERS);
 const renderer = new Renderer3D(container, CONFIG);
@@ -69,20 +69,25 @@ renderer.setClickHandler((x, z) => {
 });
 
 // Button handlers
-document.getElementById("btn-randomize")!.addEventListener("click", () => {
+document.getElementById('btn-randomize')!.addEventListener('click', () => {
   game.randomize();
   accumulated = 0;
   syncRender();
 });
 
-document.getElementById("btn-reset")!.addEventListener("click", () => {
+document.getElementById('btn-reset')!.addEventListener('click', () => {
   game.reset();
   accumulated = 0;
   syncRender();
 });
 
-document.getElementById("btn-top-view")!.addEventListener("click", () => renderer.topView());
-document.getElementById("btn-iso-view")!.addEventListener("click", () => renderer.isoView());
+document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
+document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
 
 // Expose for debugging
-(window as unknown as Record<string, unknown>).gameOfLife = { game, renderer, config: CONFIG, animId };
+(window as unknown as Record<string, unknown>).gameOfLife = {
+  game,
+  renderer,
+  config: CONFIG,
+  animId,
+};
