@@ -47,7 +47,8 @@ let animId: number;
 
 function animate(now: number): void {
   animId = requestAnimationFrame(animate);
-  const dt = now - lastTime;
+  // Cap dt to one step interval to prevent large jumps when the tab was hidden
+  const dt = Math.min(now - lastTime, CONFIG.STEP_INTERVAL_MS);
   lastTime = now;
   accumulated += dt;
 
@@ -57,7 +58,7 @@ function animate(now: number): void {
   }
 
   // Render every frame with interpolated progress for smooth cell animations
-  const progress = accumulated / CONFIG.STEP_INTERVAL_MS;
+  const progress = Math.min(accumulated / CONFIG.STEP_INTERVAL_MS, 1);
   syncRender(progress);
 }
 
