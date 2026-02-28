@@ -45,7 +45,6 @@ Open http://localhost:5173 to view in your browser.
 
 - **Click** on a cell to toggle its state (alive/dead)
 - **Spacebar** to pause/resume the simulation
-- **R** to reset to a random configuration
 
 ## How It Works
 
