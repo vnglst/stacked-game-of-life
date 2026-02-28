@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Game of Life</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0d0d0d;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+      }
+
+      #canvas-container {
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #canvas-container canvas {
+        display: block;
+      }
+
+      #generation-counter {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        color: #00ff44;
+        font-size: 14px;
+        letter-spacing: 0.05em;
+        text-shadow: 0 0 8px #00ff4480;
+        pointer-events: none;
+      }
+
+      #controls {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 10px 24px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        color: #e0e0e0;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: background 0.15s, border-color 0.15s;
+        text-transform: uppercase;
+      }
+
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .btn:active {
+        background: rgba(255, 255, 255, 0.22);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas-container"></div>
+    <div id="generation-counter">GEN: 0</div>
+    <div id="controls">
+      <button class="btn" id="btn-randomize">Randomize</button>
+      <button class="btn" id="btn-reset">Reset</button>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
