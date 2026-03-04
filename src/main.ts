@@ -68,7 +68,6 @@ renderer.setClickHandler((x, z) => {
 // Button handlers
 const patterns: Record<string, () => void> = {
   'btn-randomize': () => game.randomize(),
-  'btn-reset': () => game.reset(),
   'btn-acorn': () => game.acorn(),
   'btn-rpentomino': () => game.rPentomino(),
   'btn-glider': () => game.glider(),
