@@ -19,6 +19,10 @@ The current generation sits on top; each step the previous generation sinks down
 
 **[Live Demo →](https://stacked-game-of-life.koenvangilst.nl)**
 
+## Discussion
+
+**[Hacker News →](https://news.ycombinator.com/item?id=47197218)**
+
 ## Tech Stack
 
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
