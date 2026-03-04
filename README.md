@@ -1,4 +1,4 @@
-# A Game of Life and Ghosts
+# Game of Life and Ghosts
 
 A 3D visualization of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) where each generation sinks down into a glowing history stack.
 

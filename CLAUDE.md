@@ -1,4 +1,4 @@
-# Stacked Game of Life
+# Game of Life and Ghosts
 
 ## Overview
 

@@ -1,8 +1,8 @@
 {
-  "name": "stacked-game-of-life",
+  "name": "game-of-life-and-ghosts",
   "version": "1.0.0",
   "type": "module",
-  "description": "Stacked visualization of Conway's Game of Life with 3D history layers",
+  "description": "A 3D visualization of Conway's Game of Life where each generation sinks down into a glowing history stack",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
