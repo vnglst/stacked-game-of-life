@@ -91,6 +91,17 @@ document.getElementById('btn-iso-view')!.addEventListener('click', () => rendere
 // Configuration controls
 const layersValue = document.getElementById('layers-value')!;
 const sliderLayers = document.getElementById('slider-layers') as HTMLInputElement;
+const gridValue = document.getElementById('grid-value')!;
+const sliderGrid = document.getElementById('slider-grid') as HTMLInputElement;
+
+// Grid size slider
+sliderGrid.addEventListener('change', () => {
+  const newSize = parseInt(sliderGrid.value);
+  gridValue.textContent = String(newSize);
+  game.updateGridSize(newSize);
+  renderer.updateGridSize(newSize);
+  syncRender();
+});
 
 // History layers slider
 sliderLayers.addEventListener('input', () => {

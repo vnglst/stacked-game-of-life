@@ -251,4 +251,16 @@ export class GameOfLife {
     this.head = 0;
     this.filledCount = 0;
   }
+
+  updateGridSize(newSize: number): void {
+    (this as { size: number }).size = newSize;
+    this.grid = new Uint8Array(newSize * newSize);
+    this.bornMask = new Uint8Array(newSize * newSize);
+    this.dyingMask = new Uint8Array(newSize * newSize);
+    this.ring = Array.from({ length: this.historySize }, () => new Uint8Array(newSize * newSize));
+    this.head = 0;
+    this.filledCount = 0;
+    this.generation = 0;
+    this.acorn();
+  }
 }

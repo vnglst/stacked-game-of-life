@@ -365,6 +365,54 @@ export class Renderer3D {
     }
   }
 
+  updateGridSize(newSize: number): void {
+    // Update config
+    this.config.GRID_SIZE = newSize;
+
+    // Recalculate grid center
+    this.gc = ((newSize - 1) * this.config.CELL_SPACING) / 2;
+
+    // Remove existing meshes
+    for (const mesh of this.meshes) {
+      this.scene.remove(mesh);
+      mesh.dispose();
+    }
+
+    // Recreate layers with new size
+    this.meshes = [];
+    const maxInstances = newSize * newSize;
+
+    for (let i = 0; i < this.totalLayers; i++) {
+      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
+      const color = this.lerpColor(this.config.ACTIVE_COLOR, this.config.FADED_COLOR, t);
+      const opacity = 1.0 - t * (1.0 - this.config.MIN_OPACITY);
+      const isActive = i === 0;
+
+      const material = new MeshBasicMaterial({
+        color,
+        opacity,
+        transparent: !isActive,
+        depthWrite: isActive,
+      });
+
+      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
+      mesh.count = 0;
+      mesh.frustumCulled = false;
+      mesh.position.y = -i * this.config.LAYER_SPACING;
+      mesh.visible = this.ghostsVisible || i === 0;
+      this.scene.add(mesh);
+      this.meshes.push(mesh);
+    }
+
+    // Reset history cache
+    this.historyCache = new Array(this.totalLayers).fill(null);
+
+    // Update camera target and position
+    this.controls.target.set(this.gc, this.stackMidY, this.gc);
+    this.camera.position.set(this.gc + 70, 70, this.gc + 70);
+    this.controls.update();
+  }
+
   render(): void {
     this.updateIntro();
     this.controls.update();
