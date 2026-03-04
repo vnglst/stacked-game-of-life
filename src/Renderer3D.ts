@@ -107,7 +107,7 @@ export class Renderer3D {
     for (let i = 0; i < this.totalLayers; i++) {
       const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
       const color = this.lerpColor(config.ACTIVE_COLOR, config.FADED_COLOR, t);
-      const opacity = 1.0 - t * (1.0 - 0.05);
+      const opacity = 1.0 - t * (1.0 - config.MIN_OPACITY);
       const isActive = i === 0;
 
       const material = new MeshBasicMaterial({
@@ -297,6 +297,71 @@ export class Renderer3D {
     // Toggle visibility of history layers (indices 1+)
     for (let i = 1; i < this.totalLayers; i++) {
       this.meshes[i].visible = visible;
+    }
+  }
+
+  updateHistoryLayers(historyLayers: number): void {
+    // Remove existing meshes
+    for (const mesh of this.meshes) {
+      this.scene.remove(mesh);
+      mesh.dispose();
+    }
+
+    // Update config and state
+    this.config.HISTORY_LAYERS = historyLayers;
+    this.totalLayers = historyLayers + 1;
+
+    // Recalculate stack center
+    this.stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
+
+    // Recreate layers
+    this.meshes = [];
+    const maxInstances = this.config.GRID_SIZE * this.config.GRID_SIZE;
+
+    for (let i = 0; i < this.totalLayers; i++) {
+      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
+      const color = this.lerpColor(this.config.ACTIVE_COLOR, this.config.FADED_COLOR, t);
+      const opacity = 1.0 - t * (1.0 - this.config.MIN_OPACITY);
+      const isActive = i === 0;
+
+      const material = new MeshBasicMaterial({
+        color,
+        opacity,
+        transparent: !isActive,
+        depthWrite: isActive,
+      });
+
+      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
+      mesh.count = 0;
+      mesh.frustumCulled = false;
+      mesh.position.y = -i * this.config.LAYER_SPACING;
+      mesh.visible = this.ghostsVisible || i === 0;
+      this.scene.add(mesh);
+      this.meshes.push(mesh);
+    }
+
+    // Reset history cache
+    this.historyCache = new Array(this.totalLayers).fill(null);
+
+    // Update camera target
+    this.controls.target.set(this.gc, this.stackMidY, this.gc);
+    this.controls.update();
+  }
+
+  updateMinOpacity(minOpacity: number): void {
+    this.config.MIN_OPACITY = minOpacity;
+
+    // Update opacity for all layers
+    for (let i = 0; i < this.totalLayers; i++) {
+      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
+      const opacity = 1.0 - t * (1.0 - minOpacity);
+      const isActive = i === 0;
+
+      const material = this.meshes[i].material as MeshBasicMaterial;
+      material.opacity = opacity;
+      material.transparent = !isActive;
+      material.depthWrite = isActive;
+      material.needsUpdate = true;
     }
   }
 

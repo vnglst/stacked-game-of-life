@@ -12,6 +12,7 @@ const CONFIG: Config = {
   ACTIVE_COLOR: 0x00ff41,
   FADED_COLOR: 0x003b00,
   BACKGROUND_COLOR: 0x000000,
+  MIN_OPACITY: 0.05,
 };
 
 const container = document.getElementById('canvas-container')!;
@@ -87,17 +88,16 @@ for (const [id, action] of Object.entries(patterns)) {
 document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
 document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
 
-// Ghosts toggle
-const btnToggleGhosts = document.getElementById('btn-toggle-ghosts')!;
-let ghostsEnabled = true;
-btnToggleGhosts.addEventListener('click', () => {
-  ghostsEnabled = !ghostsEnabled;
-  renderer.setGhostsVisible(ghostsEnabled);
-  if (ghostsEnabled) {
-    btnToggleGhosts.classList.remove('toggled-off');
-  } else {
-    btnToggleGhosts.classList.add('toggled-off');
-  }
+// Configuration controls
+const layersValue = document.getElementById('layers-value')!;
+const sliderLayers = document.getElementById('slider-layers') as HTMLInputElement;
+
+// History layers slider
+sliderLayers.addEventListener('input', () => {
+  const layers = parseInt(sliderLayers.value);
+  layersValue.textContent = String(layers);
+  game.updateHistorySize(layers);
+  renderer.updateHistoryLayers(layers);
 });
 
 // Settings menu toggle

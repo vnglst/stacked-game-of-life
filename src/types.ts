@@ -8,4 +8,5 @@ export interface Config {
   ACTIVE_COLOR: number;
   FADED_COLOR: number;
   BACKGROUND_COLOR: number;
+  MIN_OPACITY: number;
 }

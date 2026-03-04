@@ -244,4 +244,11 @@ export class GameOfLife {
     this.dyingMask.fill(0);
     for (const buf of this.ring) buf.fill(0);
   }
+
+  updateHistorySize(newSize: number): void {
+    (this as { historySize: number }).historySize = newSize;
+    this.ring = Array.from({ length: newSize }, () => new Uint8Array(this.size * this.size));
+    this.head = 0;
+    this.filledCount = 0;
+  }
 }

@@ -176,17 +176,77 @@
         flex: 1 1 100%;
       }
 
-      .settings-button.toggled-off {
-        background: rgba(255, 68, 0, 0.06);
-        border-color: rgba(255, 68, 0, 0.15);
-        color: rgba(255, 68, 0, 0.7);
+      .settings-slider-container {
+        margin-top: 4px;
       }
 
-      .settings-button.toggled-off:hover {
-        background: rgba(255, 68, 0, 0.12);
-        border-color: rgba(255, 68, 0, 0.35);
-        color: rgba(255, 68, 0, 0.95);
-        box-shadow: 0 0 10px rgba(255, 68, 0, 0.2);
+      .settings-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(0, 255, 68, 0.15);
+        outline: none;
+        cursor: pointer;
+      }
+
+      .settings-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(0, 255, 68, 0.8);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .settings-slider::-webkit-slider-thumb:hover {
+        background: rgba(0, 255, 68, 1);
+        transform: scale(1.2);
+      }
+
+      .settings-slider::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(0, 255, 68, 0.8);
+        cursor: pointer;
+        border: none;
+        transition: all 0.15s ease;
+      }
+
+      .settings-slider::-moz-range-thumb:hover {
+        background: rgba(0, 255, 68, 1);
+        transform: scale(1.2);
+      }
+
+      .settings-slider::-moz-range-track {
+        width: 100%;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(0, 255, 68, 0.15);
+      }
+
+      .settings-value {
+        display: inline-block;
+        color: rgba(0, 255, 68, 0.9);
+        font-size: 10px;
+        margin-left: 8px;
+        min-width: 24px;
+        text-align: right;
+      }
+
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .settings-row:last-child {
+        margin-bottom: 0;
       }
     </style>
   </head>
@@ -227,9 +287,20 @@
           </div>
         </div>
         <div class="settings-section">
-          <span class="settings-label">Display</span>
-          <div class="settings-buttons">
-            <button class="settings-button" id="btn-toggle-ghosts">Ghosts</button>
+          <span class="settings-label">Configuration</span>
+          <div class="settings-row">
+            <span style="color: rgba(0, 255, 68, 0.6); font-size: 10px">History layers</span>
+            <span class="settings-value" id="layers-value">30</span>
+          </div>
+          <div class="settings-slider-container">
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value="30"
+              class="settings-slider"
+              id="slider-layers"
+            />
           </div>
         </div>
       </div>
