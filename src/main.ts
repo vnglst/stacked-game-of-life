@@ -111,6 +111,16 @@ sliderLayers.addEventListener('input', () => {
   renderer.updateHistoryLayers(layers);
 });
 
+// Speed slider
+const speedValue = document.getElementById('speed-value')!;
+const sliderSpeed = document.getElementById('slider-speed') as HTMLInputElement;
+
+sliderSpeed.addEventListener('input', () => {
+  const stepsPerSecond = parseInt(sliderSpeed.value);
+  speedValue.textContent = String(stepsPerSecond);
+  CONFIG.STEP_INTERVAL_MS = 1000 / stepsPerSecond;
+});
+
 // Settings menu toggle
 const settingsToggle = document.getElementById('settings-toggle')!;
 const settingsDropdown = document.getElementById('settings-dropdown')!;
