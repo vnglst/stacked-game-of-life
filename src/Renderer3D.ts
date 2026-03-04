@@ -95,10 +95,10 @@ export class Renderer3D {
     this.controls.enabled = false;
     this.controls.update();
 
-    // Cancel intro on any user interaction
+    // Cancel intro on any user interaction (capture phase ensures controls.enabled becomes true before OrbitControls handles the event)
     const onInteract = () => this.cancelIntro();
-    this.renderer.domElement.addEventListener('pointerdown', onInteract);
-    this.renderer.domElement.addEventListener('wheel', onInteract);
+    this.renderer.domElement.addEventListener('pointerdown', onInteract, true);
+    this.renderer.domElement.addEventListener('wheel', onInteract, true);
 
     // Create one InstancedMesh per layer
     const maxInstances = config.GRID_SIZE * config.GRID_SIZE;
@@ -140,23 +140,26 @@ export class Renderer3D {
     const pointer = new Vector2();
     const hit = new Vector3();
     let dragDist = 0;
-    let downX = 0;
-    let downY = 0;
+    let isPointerDown = false;
 
     canvas.addEventListener('pointerdown', (e) => {
-      downX = e.clientX;
-      downY = e.clientY;
+      isPointerDown = true;
       dragDist = 0;
+      pointer.set(e.clientX, e.clientY);
     });
 
     canvas.addEventListener('pointermove', (e) => {
-      const dx = e.clientX - downX;
-      const dy = e.clientY - downY;
+      if (!isPointerDown) return;
+      const dx = e.clientX - pointer.x;
+      const dy = e.clientY - pointer.y;
       dragDist = Math.hypot(dx, dy);
     });
 
     canvas.addEventListener('pointerup', (e) => {
-      if (dragDist > 5) return; // ignore drags (orbit control)
+      isPointerDown = false;
+      // Ignore if this was a drag (let OrbitControls handle it)
+      if (dragDist > 5) return;
+
       const rect = canvas.getBoundingClientRect();
       pointer.set(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -168,6 +171,12 @@ export class Renderer3D {
         const z = Math.round(hit.z / this.config.CELL_SPACING);
         onCell(x, z);
       }
+    });
+
+    // Reset state if pointer is cancelled
+    canvas.addEventListener('pointercancel', () => {
+      isPointerDown = false;
+      dragDist = 0;
     });
   }
 
