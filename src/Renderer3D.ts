@@ -19,7 +19,7 @@ export class Renderer3D {
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
-  private meshes: InstancedMesh[];
+  private meshes: InstancedMesh[] = [];
   private geometry: BoxGeometry;
   private totalLayers: number;
   private config: Config;
@@ -100,34 +100,8 @@ export class Renderer3D {
     this.renderer.domElement.addEventListener('pointerdown', onInteract, true);
     this.renderer.domElement.addEventListener('wheel', onInteract, true);
 
-    // Create one InstancedMesh per layer
-    const maxInstances = config.GRID_SIZE * config.GRID_SIZE;
-    this.meshes = [];
-
-    for (let i = 0; i < this.totalLayers; i++) {
-      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
-      const color = this.lerpColor(config.ACTIVE_COLOR, config.FADED_COLOR, t);
-      const opacity = 1.0 - t * (1.0 - config.MIN_OPACITY);
-      const isActive = i === 0;
-
-      const material = new MeshBasicMaterial({
-        color,
-        opacity,
-        transparent: !isActive,
-        depthWrite: isActive,
-      });
-
-      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
-      mesh.count = 0;
-      mesh.frustumCulled = false; // instances span the full grid; geometry bounding sphere is too small
-      // Y position: active layer at 0, history sinks down
-      mesh.position.y = -i * config.LAYER_SPACING;
-      this.scene.add(mesh);
-      this.meshes.push(mesh);
-    }
-
-    // Initialize history caches
-    this.historyCache = new Array(this.totalLayers).fill(null);
+    this.rebuildMeshes(config.GRID_SIZE * config.GRID_SIZE);
+    this.resetHistoryCache();
 
     // Handle resize
     window.addEventListener('resize', () => this.onResize(container));
@@ -191,6 +165,42 @@ export class Renderer3D {
     const g = Math.round(fg + (tg - fg) * t);
     const b = Math.round(fb + (tb - fb) * t);
     return (r << 16) | (g << 8) | b;
+  }
+
+  private disposeMeshes(): void {
+    for (const mesh of this.meshes) {
+      this.scene.remove(mesh);
+      mesh.dispose();
+    }
+  }
+
+  private rebuildMeshes(maxInstances: number): void {
+    this.meshes = [];
+    for (let i = 0; i < this.totalLayers; i++) {
+      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
+      const color = this.lerpColor(this.config.ACTIVE_COLOR, this.config.FADED_COLOR, t);
+      const opacity = 1.0 - t * (1.0 - this.config.MIN_OPACITY);
+      const isActive = i === 0;
+
+      const material = new MeshBasicMaterial({
+        color,
+        opacity,
+        transparent: !isActive,
+        depthWrite: isActive,
+      });
+
+      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
+      mesh.count = 0;
+      mesh.frustumCulled = false;
+      mesh.position.y = -i * this.config.LAYER_SPACING;
+      mesh.visible = this.ghostsVisible || isActive;
+      this.scene.add(mesh);
+      this.meshes.push(mesh);
+    }
+  }
+
+  private resetHistoryCache(): void {
+    this.historyCache = new Array(this.totalLayers).fill(null);
   }
 
   updateLayer(
@@ -301,11 +311,7 @@ export class Renderer3D {
   }
 
   updateHistoryLayers(historyLayers: number): void {
-    // Remove existing meshes
-    for (const mesh of this.meshes) {
-      this.scene.remove(mesh);
-      mesh.dispose();
-    }
+    this.disposeMeshes();
 
     // Update config and state
     this.config.HISTORY_LAYERS = historyLayers;
@@ -314,34 +320,8 @@ export class Renderer3D {
     // Recalculate stack center
     this.stackMidY = -((this.totalLayers - 1) * this.config.LAYER_SPACING) / 2;
 
-    // Recreate layers
-    this.meshes = [];
-    const maxInstances = this.config.GRID_SIZE * this.config.GRID_SIZE;
-
-    for (let i = 0; i < this.totalLayers; i++) {
-      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
-      const color = this.lerpColor(this.config.ACTIVE_COLOR, this.config.FADED_COLOR, t);
-      const opacity = 1.0 - t * (1.0 - this.config.MIN_OPACITY);
-      const isActive = i === 0;
-
-      const material = new MeshBasicMaterial({
-        color,
-        opacity,
-        transparent: !isActive,
-        depthWrite: isActive,
-      });
-
-      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
-      mesh.count = 0;
-      mesh.frustumCulled = false;
-      mesh.position.y = -i * this.config.LAYER_SPACING;
-      mesh.visible = this.ghostsVisible || i === 0;
-      this.scene.add(mesh);
-      this.meshes.push(mesh);
-    }
-
-    // Reset history cache
-    this.historyCache = new Array(this.totalLayers).fill(null);
+    this.rebuildMeshes(this.config.GRID_SIZE * this.config.GRID_SIZE);
+    this.resetHistoryCache();
 
     // Update camera target
     this.controls.target.set(this.gc, this.stackMidY, this.gc);
@@ -372,40 +352,9 @@ export class Renderer3D {
     // Recalculate grid center
     this.gc = ((newSize - 1) * this.config.CELL_SPACING) / 2;
 
-    // Remove existing meshes
-    for (const mesh of this.meshes) {
-      this.scene.remove(mesh);
-      mesh.dispose();
-    }
-
-    // Recreate layers with new size
-    this.meshes = [];
-    const maxInstances = newSize * newSize;
-
-    for (let i = 0; i < this.totalLayers; i++) {
-      const t = this.totalLayers > 1 ? i / (this.totalLayers - 1) : 0;
-      const color = this.lerpColor(this.config.ACTIVE_COLOR, this.config.FADED_COLOR, t);
-      const opacity = 1.0 - t * (1.0 - this.config.MIN_OPACITY);
-      const isActive = i === 0;
-
-      const material = new MeshBasicMaterial({
-        color,
-        opacity,
-        transparent: !isActive,
-        depthWrite: isActive,
-      });
-
-      const mesh = new InstancedMesh(this.geometry, material, maxInstances);
-      mesh.count = 0;
-      mesh.frustumCulled = false;
-      mesh.position.y = -i * this.config.LAYER_SPACING;
-      mesh.visible = this.ghostsVisible || i === 0;
-      this.scene.add(mesh);
-      this.meshes.push(mesh);
-    }
-
-    // Reset history cache
-    this.historyCache = new Array(this.totalLayers).fill(null);
+    this.disposeMeshes();
+    this.rebuildMeshes(newSize * newSize);
+    this.resetHistoryCache();
 
     // Update camera target and position
     this.controls.target.set(this.gc, this.stackMidY, this.gc);

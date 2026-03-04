@@ -1,7 +1,8 @@
 export class GameOfLife {
-  readonly size: number;
-  readonly historySize: number;
+  size: number;
+  historySize: number;
   grid: Uint8Array;
+  private nextGrid: Uint8Array;
   bornMask: Uint8Array;
   dyingMask: Uint8Array;
   private ring: Uint8Array[];
@@ -13,6 +14,7 @@ export class GameOfLife {
     this.size = size;
     this.historySize = historySize;
     this.grid = new Uint8Array(size * size);
+    this.nextGrid = new Uint8Array(size * size);
     this.bornMask = new Uint8Array(size * size);
     this.dyingMask = new Uint8Array(size * size);
     this.ring = Array.from({ length: historySize }, () => new Uint8Array(size * size));
@@ -29,15 +31,16 @@ export class GameOfLife {
 
     // Compute next generation in a temp buffer
     const size = this.size;
-    const next = new Uint8Array(size * size);
+    const next = this.nextGrid;
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
+        const idx = y * size + x;
         const neighbors = this.countNeighbors(x, y);
-        const alive = this.grid[y * size + x] === 1;
+        const alive = this.grid[idx] === 1;
         if (alive) {
-          next[y * size + x] = neighbors === 2 || neighbors === 3 ? 1 : 0;
+          next[idx] = neighbors === 2 || neighbors === 3 ? 1 : 0;
         } else {
-          next[y * size + x] = neighbors === 3 ? 1 : 0;
+          next[idx] = neighbors === 3 ? 1 : 0;
         }
       }
     }
@@ -50,6 +53,7 @@ export class GameOfLife {
       this.dyingMask[i] = was === 1 && will === 0 ? 1 : 0;
     }
 
+    this.nextGrid = this.grid;
     this.grid = next;
     this.generation++;
   }
@@ -73,7 +77,7 @@ export class GameOfLife {
     if (i >= this.filledCount) return null;
     // head points to the slot that will be written next,
     // so (head - 1) is the most recent snapshot
-    const idx = (this.head - 1 - i + this.historySize * 10) % this.historySize;
+    const idx = (this.head - 1 - i + this.historySize) % this.historySize;
     return this.ring[idx];
   }
 
@@ -246,15 +250,16 @@ export class GameOfLife {
   }
 
   updateHistorySize(newSize: number): void {
-    (this as { historySize: number }).historySize = newSize;
+    this.historySize = newSize;
     this.ring = Array.from({ length: newSize }, () => new Uint8Array(this.size * this.size));
     this.head = 0;
     this.filledCount = 0;
   }
 
   updateGridSize(newSize: number): void {
-    (this as { size: number }).size = newSize;
+    this.size = newSize;
     this.grid = new Uint8Array(newSize * newSize);
+    this.nextGrid = new Uint8Array(newSize * newSize);
     this.bornMask = new Uint8Array(newSize * newSize);
     this.dyingMask = new Uint8Array(newSize * newSize);
     this.ring = Array.from({ length: this.historySize }, () => new Uint8Array(newSize * newSize));
