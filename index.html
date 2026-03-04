@@ -175,6 +175,19 @@
       .settings-buttons-patterns .settings-button {
         flex: 1 1 100%;
       }
+
+      .settings-button.toggled-off {
+        background: rgba(255, 68, 0, 0.06);
+        border-color: rgba(255, 68, 0, 0.15);
+        color: rgba(255, 68, 0, 0.7);
+      }
+
+      .settings-button.toggled-off:hover {
+        background: rgba(255, 68, 0, 0.12);
+        border-color: rgba(255, 68, 0, 0.35);
+        color: rgba(255, 68, 0, 0.95);
+        box-shadow: 0 0 10px rgba(255, 68, 0, 0.2);
+      }
     </style>
   </head>
   <body>
@@ -212,6 +225,12 @@
           <div class="settings-buttons">
             <button class="settings-button" id="btn-top-view">Top</button>
             <button class="settings-button" id="btn-iso-view">Iso</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <span class="settings-label">Display</span>
+          <div class="settings-buttons">
+            <button class="settings-button" id="btn-toggle-ghosts">Ghosts</button>
           </div>
         </div>
       </div>

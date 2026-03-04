@@ -88,6 +88,19 @@ for (const [id, action] of Object.entries(patterns)) {
 document.getElementById('btn-top-view')!.addEventListener('click', () => renderer.topView());
 document.getElementById('btn-iso-view')!.addEventListener('click', () => renderer.isoView());
 
+// Ghosts toggle
+const btnToggleGhosts = document.getElementById('btn-toggle-ghosts')!;
+let ghostsEnabled = true;
+btnToggleGhosts.addEventListener('click', () => {
+  ghostsEnabled = !ghostsEnabled;
+  renderer.setGhostsVisible(ghostsEnabled);
+  if (ghostsEnabled) {
+    btnToggleGhosts.classList.remove('toggled-off');
+  } else {
+    btnToggleGhosts.classList.add('toggled-off');
+  }
+});
+
 // Settings menu toggle
 const settingsToggle = document.getElementById('settings-toggle')!;
 const settingsDropdown = document.getElementById('settings-dropdown')!;

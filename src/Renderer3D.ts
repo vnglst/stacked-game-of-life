@@ -242,8 +242,10 @@ export class Renderer3D {
     // Layer 0 = active (current generation) - always update for animation
     this.updateLayer(0, current, progress, bornMask, dyingMask);
 
-    // Layers 1..HISTORY_LAYES = history (most recent first)
+    // Layers 1..HISTORY_LAYERS = history (most recent first)
     // Only update when history data changes (cache miss) for performance
+    // Skip if ghosts are hidden
+    if (!this.ghostsVisible) return;
     for (let i = 1; i < this.totalLayers; i++) {
       const hist = getHistory(i - 1);
       const cached = this.historyCache[i];
@@ -286,6 +288,16 @@ export class Renderer3D {
     this.camera.position.set(this.gc + 70, 70, this.gc + 70);
     this.controls.target.set(this.gc, this.stackMidY, this.gc);
     this.controls.update();
+  }
+
+  private ghostsVisible = true;
+
+  setGhostsVisible(visible: boolean): void {
+    this.ghostsVisible = visible;
+    // Toggle visibility of history layers (indices 1+)
+    for (let i = 1; i < this.totalLayers; i++) {
+      this.meshes[i].visible = visible;
+    }
   }
 
   render(): void {
